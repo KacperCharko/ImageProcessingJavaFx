@@ -55,6 +55,7 @@ public class MyFirstApp extends Application {
     private Button binarizationWithTreshold;
     private Button otsuBinarization;
     private Button niblackBinarization;
+    private Button filterPrewitta;
     private Stage stage;
     private Label colorLabel;
     private double width;
@@ -131,6 +132,9 @@ public class MyFirstApp extends Application {
 
         niblackBinarization = new Button ("Binaryzacja");
         niblackBinarization.setOnMouseClicked(this::niblackBinarization);
+
+        filterPrewitta = new Button("Prewitta");
+        filterPrewitta.setOnMouseClicked(this::prewittaClick);
 
         colorLabel = new Label("");
 
@@ -294,7 +298,7 @@ public class MyFirstApp extends Application {
 
 
         btnBar.getButtons().setAll(colorLabel,ZoomIn,ZoomOff,colorPicker);
-        root.getChildren().addAll(SettsBtn,btnBar,scrollPane,saveBtn,grid);
+        root.getChildren().addAll(SettsBtn,filterPrewitta,btnBar,scrollPane,saveBtn,grid);
         Scene scene = new Scene(root);
 
         stage.setScene(scene);
@@ -305,6 +309,16 @@ public class MyFirstApp extends Application {
         ZoomIn.setOnMouseClicked(this::handleZoomIn);
         ZoomOff.setOnMouseClicked(this::handleZoomOff);
         SettsBtn.setOnMouseClicked(this::loadFile);
+    }
+
+    private void prewittaClick(MouseEvent mouseEvent) {
+
+        WritableImage image = Filter.prewitt(imageActiveRightNow,Filter.P0);
+
+        imageView.setImage(image);
+        pixelReader = image.getPixelReader();
+        imageActiveRightNow = image;
+        writableImage = image;
     }
 
     private void niblackBinarization(MouseEvent mouseEvent) {
@@ -865,8 +879,6 @@ public class MyFirstApp extends Application {
 
     }
 
-    public void otsuBinarization (Image image){
 
-    }
 
 }
