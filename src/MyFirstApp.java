@@ -56,6 +56,16 @@ public class MyFirstApp extends Application {
     private Button otsuBinarization;
     private Button niblackBinarization;
     private Button filterPrewitta;
+    private Button lowPassFilterBtn;
+    private Button prewittFilterBtn;
+    private Button sobelFilterBtn;
+    private Button laplaceFilterBtn;
+    private Button detectorFilterBtn;
+    private Button kuwaharaFilterBtn;
+    private Button median3x3FilterBtn;
+    private Button median5x5FilterBtn;
+
+
     private Stage stage;
     private Label colorLabel;
     private double width;
@@ -101,6 +111,7 @@ public class MyFirstApp extends Application {
         VBox root = new VBox();
         imageView = new ImageView();
         ButtonBar btnBar = new ButtonBar();
+        ButtonBar filterBar = new ButtonBar();
         Button SettsBtn = new javafx.scene.control.Button("Załaduj zdjęcie");
         Button ZoomIn = new Button("Zoom+");
         Button ZoomOff = new Button("Zoom-");
@@ -136,6 +147,22 @@ public class MyFirstApp extends Application {
         filterPrewitta = new Button("Prewitta");
         filterPrewitta.setOnMouseClicked(this::prewittaClick);
 
+        sobelFilterBtn = new Button("Sobel");
+        laplaceFilterBtn = new Button("Laplace");
+        median3x3FilterBtn = new Button ("Mediana 3x3");
+        median5x5FilterBtn = new Button("Mediana 5x5");
+        kuwaharaFilterBtn = new Button ("kuwahara");
+        detectorFilterBtn = new Button("detektor krawedzi");
+        lowPassFilterBtn = new Button("dolnoprzepustowy");
+
+        sobelFilterBtn.setOnMouseClicked(this::sobelClick);
+        laplaceFilterBtn.setOnMouseClicked(this::laplaceClick);
+        median3x3FilterBtn.setOnMouseClicked(this::med3x3Click);
+        median5x5FilterBtn.setOnMouseClicked(this::med5x5Click);
+        kuwaharaFilterBtn.setOnMouseClicked(this::kuwaharaClick);
+        detectorFilterBtn.setOnMouseClicked(this::detectorClick);
+        lowPassFilterBtn.setOnMouseClicked(this::lowPassClick);
+
         colorLabel = new Label("");
 
         sliderBrightDim  = new Slider(0,3,1);
@@ -143,10 +170,7 @@ public class MyFirstApp extends Application {
         binarizationTresholdSlider = new Slider(0,255,127);
         niblackKSlider = new Slider(-1,-0.001,-0.5);
         niblackSizeSlider = new Slider(1,23,7);
-//        hSlider
-//        hSlider.setShowTickMarks(true);
-//        hSlider.setShowTickLabels(true);
-//        hSlider.setBlockIncrement(10);
+
 
         final Label BrightDimLabel = new Label("parametr rozjaśniania/ściemnienia:  ");
         final Label StrechingLabel = new Label("Zakres wartości do rozciągnięcia: ");
@@ -157,6 +181,8 @@ public class MyFirstApp extends Application {
         final Label niblackBinarizationWithTresholdLabel = new Label("binaryzacja z wyznaczaniem progu przy pomocy Otsu:");
         final Label niblackK = new Label("parametr k:");
         final Label niblackSize = new Label("szerokosc okna:");
+
+
 
 
         final Label brightDimVal = new Label(
@@ -295,10 +321,10 @@ public class MyFirstApp extends Application {
 
         GridPane.setConstraints(niblackBinarization, 7, 5);
         grid.getChildren().add(niblackBinarization);
-
+        filterBar.getButtons().setAll(lowPassFilterBtn,sobelFilterBtn,laplaceFilterBtn,detectorFilterBtn,filterPrewitta,kuwaharaFilterBtn,median3x3FilterBtn,median5x5FilterBtn);
 
         btnBar.getButtons().setAll(colorLabel,ZoomIn,ZoomOff,colorPicker);
-        root.getChildren().addAll(SettsBtn,filterPrewitta,btnBar,scrollPane,saveBtn,grid);
+        root.getChildren().addAll(SettsBtn,filterBar,btnBar,scrollPane,saveBtn,grid);
         Scene scene = new Scene(root);
 
         stage.setScene(scene);
@@ -311,44 +337,80 @@ public class MyFirstApp extends Application {
         SettsBtn.setOnMouseClicked(this::loadFile);
     }
 
-    private void prewittaClick(MouseEvent mouseEvent) {
-
-        WritableImage image = Filter.prewitt(imageActiveRightNow,Filter.P0);
-
+    private void setPic(WritableImage image){
         imageView.setImage(image);
         pixelReader = image.getPixelReader();
         imageActiveRightNow = image;
         writableImage = image;
+    }
+
+    private void lowPassClick(MouseEvent mouseEvent) {
+        WritableImage image = Filter.maskFilter(imageActiveRightNow,Filter.low);
+        setPic(image);
+
+    }
+
+    private void detectorClick(MouseEvent mouseEvent) {
+        WritableImage image = Filter.maskFilter(imageActiveRightNow,Filter.detect);
+
+        setPic(image);
+    }
+
+    private void kuwaharaClick(MouseEvent mouseEvent) {
+        WritableImage image = Filter.kuwahara(imageActiveRightNow,5);
+
+        setPic(image);
+    }
+
+    private void med5x5Click(MouseEvent mouseEvent) {
+        WritableImage image = Filter.medianFilter(imageActiveRightNow,5);
+
+        setPic(image);
+    }
+
+    private void med3x3Click(MouseEvent mouseEvent) {
+        WritableImage image = Filter.medianFilter(imageActiveRightNow,3);
+
+        setPic(image);
+    }
+
+    private void laplaceClick(MouseEvent mouseEvent) {
+        WritableImage image = Filter.maskFilter(imageActiveRightNow,Filter.laplace);
+
+        setPic(image);
+    }
+
+    private void sobelClick(MouseEvent mouseEvent) {
+        WritableImage image = Filter.maskFilter(imageActiveRightNow,Filter.sobel);
+
+        setPic(image);
+    }
+
+    private void prewittaClick(MouseEvent mouseEvent) {
+
+        WritableImage image = Filter.maskFilter(imageActiveRightNow,Filter.prewitt);
+
+        setPic(image);
     }
 
     private void niblackBinarization(MouseEvent mouseEvent) {
         ImageProccess imageProccess = new ImageProccess(imageActiveRightNow);
         WritableImage image = imageProccess.niblackTrasholding(imageActiveRightNow, niblackKSlider.getValue(), (int)niblackSizeSlider.getValue());
 
-        imageView.setImage(image);
-        pixelReader = image.getPixelReader();
-        imageActiveRightNow = image;
-        writableImage = image;
+        setPic(image);
     }
 
     private void otsuBinarizationClick(MouseEvent mouseEvent) {
         ImageProccess imageProccess = new ImageProccess(imageActiveRightNow);
         WritableImage image = imageProccess.otsuBinarization(imageActiveRightNow);
 
-        imageView.setImage(image);
-        pixelReader = image.getPixelReader();
-        imageActiveRightNow = image;
-        writableImage = image;
+        setPic(image);
     }
 
     private void simpleBinarizationClick(MouseEvent mouseEvent) {
         ImageProccess imageProccess = new ImageProccess(imageActiveRightNow);
         WritableImage image = imageProccess.simpleBinarizationWithTreshold(imageActiveRightNow, (int)binarizationTresholdSlider.getValue());
-       // WritableImage image =  imageProccess.niblackTrasholding(imageActiveRightNow, -0.5, 7);
-        imageView.setImage(image);
-        pixelReader = image.getPixelReader();
-        imageActiveRightNow = image;
-        writableImage = image;
+        setPic(image);
     }
 
     private void equalizationClick(MouseEvent mouseEvent) {
@@ -484,23 +546,6 @@ public class MyFirstApp extends Application {
           double clickedWidth = e.getX()/resizedWidth;
           changeColor(imageActiveRightNow, clickedHeight,clickedWidth);
 
-
-
-//        int rows = 2;
-//        int cols = 2;
-//        double clickedHeight = e.getY()/resizedHeight;
-//        double clickedWidth = e.getX()/resizedWidth;
-//
-//        for(int i=-(rows/2); i<rows/2; i++)
-//            for(int j=-(cols/2); j<cols/2; j++)
-//            {
-//                pixelWriter.setColor(
-//                        (int)(clickedWidth*width),
-//                        (int)(clickedHeight*height),
-//                         colorPicker.getValue());
-//            }
-//        pixelReader=writableImage.getPixelReader();
-//        imageView.setImage(writableImage);
     }
 
     private void changeColor(Image image,double clickedHeight, double clickedWidth) {
